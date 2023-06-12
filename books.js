@@ -1,19 +1,30 @@
 
-function renderBooks(filter) {
+ let books;
+ 
+ async function renderBooks(filter) {
     const booksWrapper = document.querySelector('.books');
     
-    const books = getBooks();
+
+    booksWrapper.classList += ' books__loading'
+
+    if(!books) {
+        books = await getBooks();
+    }
 
     
+     books =  await getBooks();
+    booksWrapper.classList.remove('books__loading')
+console.log(books)
+
 
     if (filter === 'LOW_TO_HIGH') {
-console.log(filter)
-         books.sort((a, b) => a.originalPrice - b.originalPrice) 
+
+         books.sort((a, b) => (a.salePrice || a.originalPrice) - (b.salePrice || b.originalPrice)) 
          
 }
 
 else if (filter === 'HIGH_TO_LOW') {
-    books.sort((a, b) => b.originalPrice - a.originalPrice) 
+    books.sort((a, b) => (b. salePrice || b.originalPrice) - (a.salePrice || a.originalPrice))
 
 }
 
@@ -47,16 +58,27 @@ map((book) => {
         ${ratingsHTML(book.rating)} 
     </div>
     <div class="book__price">
-        <span>£${book.originalPrice.toFixed(2)}</span>
-    </div>
+    ${priceHTML(book.originalPrice, book.salePrice)}
+
+  </div>
     </div>`
 }
 )
     .join("");
 
 
-    booksWrapper.innerHTML = booksHtml
+    booksWrapper.innerHTML = booksHtml;
 }
+
+function priceHTML(originalPrice, salePrice) {
+    if (!salePrice) {
+        return `£${originalPrice}`
+    }
+        return `<span class="book__price--normal">£${originalPrice}</span>£${salePrice}`
+    
+    }
+
+
 
 function ratingsHTML (rating) {
     let ratingHTML = "";
@@ -75,12 +97,16 @@ function filterBooks(event) {
     renderBooks(event.target.value);
 }
 
+
+
 setTimeout(() => {
 renderBooks();
 });
 
 function getBooks() {
-return [
+   return new Promise((resolve) => {
+ setTimeout(() => {
+ resolve([
     {
     id: 1,
     title: "Atomic Habits",
@@ -150,7 +176,7 @@ return [
     title: "The 10 X rule",
     url: "assets/book-1.jpeg",
     originalPrice:  14.99,
-    salePrice: 10.99,
+    salePrice: 12.99,
     rating: 4.5,
 
 },
@@ -188,7 +214,9 @@ return [
     originalPrice:  20.99,
     salePrice: 16.99,
     rating: 4.5,
-
-}
- ];
+ 
+ },
+ ]);
+    }, 1000);
+    });
 }
